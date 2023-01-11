@@ -3,6 +3,8 @@ const { JWT_SECRET } = require('../config/key')
 const mongoose = require('mongoose')
 const User = mongoose.model("User")
 
+//so requireLogin middleware take in the authorization header, using jwt to match, then return with 
+//req.user from the mongodb _id user data
 module.exports = (req,res,next) => {
     const {authorization} = req.headers
     //authorization == Bearer earegpadfadsn
