@@ -345,7 +345,6 @@ router.post(/^\/(?:api\/)?bind-email$/, (req, res) => {
                   })
                   .catch(error => res.status(500).send(error.message))
               })
-              return res.json({ token, user })
             }
             else {
               return res.status(422).json({ error: "please insert correct password" })
