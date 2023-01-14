@@ -2,3 +2,7 @@ dev.js
 node_modules/
 userlist.json
 envsetup.sh
+modify-user-list.js
+userlist-backup.json
+.wwebjs_auth/
+wwebjs_auth/

@@ -4,16 +4,16 @@ const mongoose = require('mongoose')
 const User = mongoose.model("User")
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const { JWT_SECRET, SENDGRID_API } = require('../config/key.js')
+const { JWT_SECRET, SENDGRID_API, EMAIL_PASS } = require('../config/key.js')
 const requireLogin = require('../middleware/requireLogin')
 const crypto = require('crypto')
 const nodemailer = require('nodemailer')
 const sendgridTransport = require('nodemailer-sendgrid-transport')
-const transporter = nodemailer.createTransport(sendgridTransport({
+/* const transporter = nodemailer.createTransport(sendgridTransport({
   auth: {
     api_key: SENDGRID_API
   }
-}))
+})) */
 
 /* router.post('/adminsignup', requireLogin, (req, res) => {
   const { name, email, password, pic } = req.body
@@ -171,6 +171,65 @@ router.post(/^\/(?:api\/)?signin$/, (req, res) => {
   res.status(200).json({message:"this is both /api/try and /try route"})
 }) */
 
+function resetEmail(to, token) {
+  return new Promise((resolve, reject) => {
+    var transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: "contact.itapworld@gmail.com",
+        pass: EMAIL_PASS
+      }
+    })
+    const mail_configs = {
+      from: "contact.itapworld@gmail.com",
+      to: to,
+      subject: 'iTap Password Reset',
+      html: `
+      <p>You requested for password reset</p>
+      <h5>click on this <a href="http://itap.world/reset/${token}">link</a> to reset password</h5>
+      <h5>click on this <a href="http://localhost:3000/reset/${token}">link</a> to reset password</h5>
+      `
+    }
+    transporter.sendMail(mail_configs, function (error, info) {
+      if (error) {
+        console.log(error)
+        return reject({ message: "An error has occured, mailed not sent" })
+      }
+      return resolve({ message: "Email sent successfully" })
+    })
+  })
+}
+
+
+function bindEmail(to, token) {
+  return new Promise((resolve, reject) => {
+    var transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: "contact.itapworld@gmail.com",
+        pass: EMAIL_PASS
+      }
+    })
+    const mail_configs = {
+      from: "contact.itapworld@gmail.com",
+      to: to,
+      subject: 'iTap Email activation',
+      html: `
+      <p>You requested for iTap account activation</p>
+      <h5>click on this <a href="http://itap.world/setup/${token}">link</a> to reset password</h5>
+      <h5>click on this <a href="http://localhost:3000/setup/${token}">link</a> to reset password</h5>
+      `
+    }
+    transporter.sendMail(mail_configs, function (error, info) {
+      if (error) {
+        console.log(error)
+        return reject({ message: "An error has occured, mailed not sent" })
+      }
+      return resolve({ message: "Email sent successfully" })
+    })
+  })
+}
+
 router.post(/^\/(?:api\/)?reset-password$/, (req, res) => {
   // for user to reset password
   // the flow is like this, system randomly created a token, store this token in database under the user
@@ -189,18 +248,23 @@ router.post(/^\/(?:api\/)?reset-password$/, (req, res) => {
         }
         user.resetToken = token
         user.expireToken = Date.now() + 3600000
-        user.save().then((result) => {
-          transporter.sendMail({
-            to: user.email,
-            from: "cmloh1208@gmail.com",
-            subject: "password reset",
-            html: `
+        user.save()
+          .then((result) => {
+            /* transporter.sendMail({
+              to: user.email,
+              from: "cmloh1208@gmail.com",
+              subject: "password reset",
+              html: `
           <p>You requested for password reset</p>
           <h5>click on this <a href="http://localhost:3000/reset/${token}">link</a> to reset password</h5>
           `
+            }) */
+            resetEmail(user.email, token)
+              .then(res => {
+                res.json({ message: "check your email" })
+              })
+              .catch(error => res.status(500).send(error.message))
           })
-          res.json({ message: "check your email" })
-        })
       })
   })
 })
@@ -265,17 +329,21 @@ router.post(/^\/(?:api\/)?bind-email$/, (req, res) => {
         bcrypt.compare(password, user.password)
           .then(doMatch => {
             if (doMatch) {
-
               user.save().then((result) => {
-                transporter.sendMail({
+                /* transporter.sendMail({
                   to: email,
                   from: "cmloh1208@gmail.com",
                   subject: "iTap Email activation",
                   html: `
-            <p>You requested for iTap account activation</p>
-            <h5>click on this <a href="http://localhost:3000/setup/${token}">link</a> to activate your account and set your password</h5>
-            `
-                })
+                    <p>You requested for iTap account activation</p>
+                    <h5>click on this <a href="http://localhost:3000/setup/${token}">link</a> to activate your account and set your password</h5>
+                    `
+                }) */
+                bindEmail(email, token)
+                  .then(res => {
+                    return res.json({ token, user })
+                  })
+                  .catch(error => res.status(500).send(error.message))
               })
               return res.json({ token, user })
             }
