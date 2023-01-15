@@ -187,7 +187,6 @@ function resetEmail(to, token) {
       html: `
       <p>You requested for password reset</p>
       <h5>click on this <a href="http://itap.world/reset/${token}">link</a> to reset password</h5>
-      <h5>click on this <a href="http://localhost:3000/reset/${token}">link</a> to reset password</h5>
       `
     }
     transporter.sendMail(mail_configs, function (error, info) {
@@ -217,7 +216,6 @@ function bindEmail(to, token) {
       html: `
       <p>You requested for iTap account activation</p>
       <h5>click on this <a href="http://itap.world/setup/${token}">link</a> to reset password</h5>
-      <h5>click on this <a href="http://localhost:3000/setup/${token}">link</a> to reset password</h5>
       `
     }
     transporter.sendMail(mail_configs, function (error, info) {
