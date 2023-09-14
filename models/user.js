@@ -1,36 +1,52 @@
-const mongoose = require('mongoose')
-const { ObjectId } = mongoose.Schema.Types
+const mongoose = require("mongoose");
+const { ObjectId } = mongoose.Schema.Types;
 
 const reqString = {
   type: String,
-  required: true
-}
+  required: true,
+};
 
 const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String,
-    required: true
-  },
-  password: {
-    type: String,
-    required: true
-  },
+  name: reqString,
+  theme: { type: String, default: "root" },
+  email: reqString,
+  password: reqString,
   isInitialized: {
     type: Boolean,
-    default: false
+    default: false,
   },
   backupEmail: String,
   resetToken: String,
   expireToken: Date,
   pic: {
     type: String,
-    default: "https://res.cloudinary.com/xiaomiao/image/upload/v1667155720/no-image-avatar-vector-icon-600w-2054244497_xdhqa3.jpg"
+    //default: "https://res.cloudinary.com/xiaomiao/image/upload/v1667155720/no-image-avatar-vector-icon-600w-2054244497_xdhqa3.jpg"
+  },
+  coverPic: {
+    type: String,
+  },
+  vcard: {
+    name: String,
+    nickname: String,
+    phone: String,
+    email: String,
+    //workemail: String,
+    //homephone: String,
+    //workphone: String,
+    //homefax: String,
+    //workfax: String,
+    organization: String,
+    title: String,
+    url: String,
+    //workurl: String,
+    //birthday: String,
+    address: String,
+    //workaddress: String,
+    notes: String,
+    //role: String,
   },
   nickname: String,
+  contactemail: String,
   workemail: String,
   phone: String,
   homephone: String,
@@ -39,17 +55,32 @@ const userSchema = new mongoose.Schema({
   workfax: String,
   url: String,
   workurl: String,
-  birthday:String,
-  address:String,
-  workaddress:String,
+  //birthday: String,
+  address: String,
+  maplink: String,
+  workaddress: String,
   title: String,
   role: String,
   organization: String,
-  links: [{ type: String }],
+  /*  links: [{ type: String }], */
   followers: [{ type: ObjectId, ref: "User" }],
   following: [{ type: ObjectId, ref: "User" }],
-  socials: {
-    facebook: { type: String },
+  socials: [
+    {
+      app: {
+        type: String,
+        required: true,
+      },
+      name: {
+        type: String,
+        required: true,
+      },
+      link: {
+        type: String,
+        required: true,
+      },
+    },
+    /* facebook: { type: String },
     whatsapp: { type: String },
     telegram: { type: String },
     linkedin: { type: String },
@@ -69,16 +100,28 @@ const userSchema = new mongoose.Schema({
     nintendo: { type: String },
     steam: { type: String },
     tng: { type: String },
-    bankacc: { type: String },
-  },
+    bankacc: { type: String }, */
+  ],
   notes: {
     type: String,
-    default: "this is something about me"
+    default: "this is something about me",
   },
   display: {
     type: String,
-    default: "list"
+    default: "list",
   },
+  links: [
+    {
+      title: {
+        type: String,
+        required: true,
+      },
+      link: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
   facebook: { type: String },
   whatsapp: { type: String },
   telegram: { type: String },
@@ -102,6 +145,10 @@ const userSchema = new mongoose.Schema({
   steam: { type: String },
   tng: { type: String },
   bankacc: { type: String },
-})
+});
 
-mongoose.model("User", userSchema)
+function arrayLimit(val) {
+  return val.length <= 3;
+}
+
+mongoose.model("User", userSchema);
