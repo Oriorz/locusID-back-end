@@ -19,6 +19,14 @@ cloudinary.config({
   api_secret: CLOUDNIARY_SECRET,
 });
 
+router.get(/^\/(?:api\/)?healthcheck$/, (req, res) => {
+  try {
+    res.json({ data: "status ok" });
+  } catch (err) {
+    return res.status(404).json({ error: "Page not found" });
+  }
+});
+
 router.get("/api/user/:id", async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.params.id }).select("-password");
