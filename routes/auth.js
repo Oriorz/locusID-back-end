@@ -9,7 +9,6 @@ const requireLogin = require("../middleware/requireLogin");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const sendgridTransport = require("nodemailer-sendgrid-transport");
-const createSerial = require('../pdfSerial')
 
 router.post(/^\/(?:api\/)?signin$/, (req, res) => {
   //signin router need to check if both email and password is present, if it is
@@ -272,56 +271,6 @@ router.post(/^\/(?:api\/)?try$/, requireLogin, (req, res) => {
   res.status(200).json({ message: "the user email is ok: " })
 })
 
-//router.post('/adminsignup', (req, res) => {
-router.post('/adminsignup', requireLogin, (req, res) => {
-  const { name, email, password, isInitialized, isbinded, card } = req.body
-  if (!email || !password || !name) {
-    return res.status(422).json({ error: "please add all the fields" })
-  }
-  if (req.user.email !== "cmloh1208@gmail.com") {
-    return res.status(422).json({ error: "only admin can access" })
-  }
-  bcrypt.hash(password, 12)
-    .then(hashedpassword => {
-      const user = new User({
-        email,
-        name,
-        password: hashedpassword,
-        isInitialized,
-      })
-      user.save()
-        .then((result) => {
-          const userData = req.body
-          const id = result._id
-          const fs = require('fs');
-          const filename = './config/userlist.json'
-          fs.readFile(filename, (err, data) => {
-            if (err) throw err;
-            let json = JSON.parse(data);
-            var result = json.reduce(function (a, b) {
-              return Math.max(a, b.serial);
-            }, Number.NEGATIVE_INFINITY);
-            const serialnumber = result + 1
-            const userlink = "http://itap.world/profile/" + id.toString()
-            console.log("serialnumber ", serialnumber, ", result ", result, " link is : ", userlink)
-            userData["id"] = id.toString()
-            userData["link"] = "http://itap.world/profile/" + id.toString()
-            userData["serial"] = serialnumber
-            json.push(userData)
-            let updatedJson = JSON.stringify(json);
-            fs.writeFile(filename, updatedJson, (err) => {
-              if (err) throw err;
-              console.log('The file has been updated');
-            });
-            createSerial({ name: String(result + 1), pw: userData.password, sn: result + 1, folderpath: "./pdf/serial/" })
-          });
-          res.json({ message: "saved to DB and updated to JSON successfully", link: "http://itap.world/profile/" + id.toString(), serial: serialnumber })
-        })
-        .catch(err => {
-          console.log(err)
-        })
-    })
-  //}
-})
+
 
 module.exports = router;

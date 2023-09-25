@@ -16,3 +16,4 @@ pdfSerial.js
 pdfSerialv2.js
 backup/
 config/backup/*
+localauth.js
