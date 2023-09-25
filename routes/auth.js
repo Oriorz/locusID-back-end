@@ -104,7 +104,7 @@ function bindEmail(to, token) {
         console.log(error);
         return reject({ message: "An error has occured, mailed not sent" });
       }
-      return resolve({ message: "Email sent successfully" });
+      return resolve({ message: "Email sent successfully", status:"ok" });
     });
   });
 }
@@ -128,6 +128,7 @@ router.post(/^\/(?:api\/)?reset-password$/, (req, res) => {
       }
       user.resetToken = token;
       user.expireToken = Date.now() + 3600000;
+      user.cooldownToken = Date.now() +120000;
       user.save().then((result) => {
         /* transporter.sendMail({
               to: user.email,
@@ -162,6 +163,7 @@ router.post(/^\/(?:api\/)?new-password$/, (req, res) => {
         user.password = hashedpassword;
         user.resetToken = undefined;
         user.expireToken = undefined;
+        user.cooldownToken = undefined;
         user.save().then((savedUser) => {
           res.json({ message: "password updated success" });
         });
@@ -170,43 +172,46 @@ router.post(/^\/(?:api\/)?new-password$/, (req, res) => {
     .catch((err) => console.log(err));
 });
 
-router.post(/^\/(?:api\/)?bind-email$/, (req, res) => {
-  const { userid, password, email } = req.body;
-  console.log(userid, password, email);
-  crypto.randomBytes(32, (err, buf) => {
-    if (err) {
-      console.log(err);
+router.post(/^\/(?:api\/)?bind-email$/, async (req, res) => {
+  try {
+    const { userid, password, email } = req.body;
+    /* console.log("bind-email received ", userid, password, email); */
+    // Check if the user exists
+    const user = await User.findOne({ _id: userid });
+    /* console.log("user from user.FindOne return is ", user) */
+    if (!user) {
+      return res.status(422).json({ error: "User does not exist with that id" });
     }
-    const token = buf.toString("hex");
-    User.findOne({ _id: userid }).then((user) => {
-      if (!user) {
-        return res.status(422).json({ error: "user don't exist with that id" });
-      }
-      user.backupEmail = email;
-      user.resetToken = token;
-      user.expireToken = Date.now() + 3600000;
-      bcrypt.compare(password, user.password).then((doMatch) => {
-        if (doMatch) {
-          user.save().then(() => {
-            bindEmail(email, token)
-              .then((res) => {
-                console.log("bindEmail Resolved")
-                return res.json({ 
-                  token:token, 
-                 /*  user:userid */ });
-              })
-              .catch((error) => res.status(500).send(error.message));
-          });
-        } else {
-          return res
-            .status(422)
-            .json({ error: "please insert correct password" });
-        }
-      });
-      //console.log(user)
-      //res.json({ message: "check your email" })
-    });
-  });
+    //check if the user is initialized
+    if (user?.isInitialized) {
+      return res.status(422).json({ error: "user already registered" });
+    }
+    //compare if the user password is correct
+    const passwordcorrect = await bcrypt.compare(password, user.password)
+    /* console.log("passwordcorrect ", passwordcorrect) */
+    if (!passwordcorrect) {
+      return res.status(422).json({ error: "User Password not correct" });
+    }
+    // Generate the token and send email
+    const token = crypto.randomBytes(32).toString("hex");
+    user.backupEmail = email;
+    user.resetToken = token;
+    user.expireToken = Date.now() + 3600000;
+    user.cooldownToken = Date.now() +120000;
+    const emailResult = await bindEmail(email, token);
+    console.log("emailResult ", emailResult)
+    const saveUser = await user.save()
+    if (!saveUser) {
+      return res.status(422).json({ error: "User Not Saved" });
+    }
+    res.json({ token });
+
+  } catch (error) {
+    // Handle other errors
+    console.error("Error in bind-email:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+
 });
 
 //similar to reset-password
@@ -222,7 +227,7 @@ router.post(/^\/(?:api\/)?new-account$/, async (req, res) => {
   /* const name = req.body.name; */
   //const email = req.body.email
   if (!newPassword /* || !name */) {
-    return res.status(422).json({ error: "please fill in new password" });
+    return res.status(422).json({ error: "please fill in password" });
   }
   User.findOne({ resetToken: sentToken, expireToken: { $gt: Date.now() } })
     .then((user) => {
@@ -232,6 +237,7 @@ router.post(/^\/(?:api\/)?new-account$/, async (req, res) => {
           .json({ error: "no user found or token expired" });
       } else {
         console.log("called");
+        console.log(user)
         //return res.json({ user })
         bcrypt
           .hash(newPassword, 12)
@@ -239,15 +245,17 @@ router.post(/^\/(?:api\/)?new-account$/, async (req, res) => {
             user.password = hashedpassword;
             user.resetToken = undefined;
             user.expireToken = undefined;
+            user.cooldownToken = undefined;
             /* user.name = name; */
             user.email = user.backupEmail;
             user.backupEmail = undefined;
             user.isInitialized = true;
+            user.firstime = true;
             user
               .save()
               .then((savedUser) => {
-                console.log(savedUser);
-                return res.json({ message: "account setup successful" });
+                console.log("savedUser" , savedUser);
+                res.json({ message: "account setup successful", id:savedUser._id });
               })
               .catch((err) => console.log(err));
           })
@@ -290,12 +298,12 @@ router.post('/adminsignup', requireLogin, (req, res) => {
           fs.readFile(filename, (err, data) => {
             if (err) throw err;
             let json = JSON.parse(data);
-            var result = json.reduce(function(a, b) {
+            var result = json.reduce(function (a, b) {
               return Math.max(a, b.serial);
-            },   Number.NEGATIVE_INFINITY);
+            }, Number.NEGATIVE_INFINITY);
             const serialnumber = result + 1
             const userlink = "http://itap.world/profile/" + id.toString()
-            console.log("serialnumber ", serialnumber , ", result " , result, " link is : ", userlink)
+            console.log("serialnumber ", serialnumber, ", result ", result, " link is : ", userlink)
             userData["id"] = id.toString()
             userData["link"] = "http://itap.world/profile/" + id.toString()
             userData["serial"] = serialnumber
@@ -305,9 +313,9 @@ router.post('/adminsignup', requireLogin, (req, res) => {
               if (err) throw err;
               console.log('The file has been updated');
             });
-            createSerial({name:String(result +1),  pw: userData.password, sn: result +1, folderpath:"./pdf/serial/"})
+            createSerial({ name: String(result + 1), pw: userData.password, sn: result + 1, folderpath: "./pdf/serial/" })
           });
-          res.json({ message: "saved to DB and updated to JSON successfully", link: "http://itap.world/profile/" + id.toString(), serial:serialnumber })
+          res.json({ message: "saved to DB and updated to JSON successfully", link: "http://itap.world/profile/" + id.toString(), serial: serialnumber })
         })
         .catch(err => {
           console.log(err)

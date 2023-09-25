@@ -13,5 +13,6 @@ pdf_lib_test.js
 pdf/
 pdfCombined.js
 pdfSerial.js
+pdfSerialv2.js
 backup/
 config/backup/*
