@@ -2,6 +2,7 @@
 const fs = require('fs');
 let jsonString = fs.readFileSync('./config/userlist.json', 'utf-8');
 let jsonObject = JSON.parse(jsonString);
+const createSerial = require('./pdfSerial')
 
 /* jsonObject.forEach((user) => {
   user.link = "http://itap.world/profile/" + user.id
@@ -9,7 +10,7 @@ let jsonObject = JSON.parse(jsonString);
 jsonString = JSON.stringify(jsonObject);
 fs.writeFileSync('./config/userlist.json', jsonString); */
 
-console.log(jsonObject.at(2).link)
+/* console.log(jsonObject.at(2).link) */
 
 /* let emptyIndex = jsonObject.findIndex((user)=> {
   return user.isbinded == false
@@ -25,3 +26,21 @@ let emptyUser = jsonObject.filter((user)=>{
 console.log("total empty card is now: ", emptyUser.length, " out of " , jsonObject.length)
 jsonString = JSON.stringify(jsonObject);
 fs.writeFileSync('./config/userlist.json', jsonString); */
+
+//find max serial number
+/* var result = jsonObject.reduce(function(a, b) {
+  return Math.max(a, b.serial);
+},   Number.NEGATIVE_INFINITY);
+let newuser = {...jsonObject[2], serial : result +1}
+jsonObject.push(newuser)
+fs.writeFileSync('./config/userlist.json', JSON.stringify(jsonObject)); */
+
+/* console.log(result) */
+
+//createSerial({name:"1929", email: "a27vt2wpij", pw: "i7q13lbt6r", sn: "1929", folderpath:"./pdf/serial/"})
+
+
+console.log("jsonObject count ", jsonObject.length)
+jsonObject.forEach(file => {
+  createSerial({name:file.serial, pw: file.password, sn: file.serial, folderpath:"./pdf/serial/"})
+});

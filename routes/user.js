@@ -21,6 +21,7 @@ cloudinary.config({
 
 router.get(/^\/(?:api\/)?healthcheck$/, (req, res) => {
   try {
+    console.log("healthcheck called ")
     res.json({ data: "status ok" });
   } catch (err) {
     return res.status(404).json({ error: "Page not found" });
@@ -93,13 +94,13 @@ router.put(/^\/(?:api\/)?updatepic$/, requireLogin, (req, res) => {
 // if it is default pic, then just do upload new picutre
 // if it is not default pic, then after do upload new picture, delete old picture
 router.put(/^\/(?:api\/)?updatecoverpic$/, requireLogin, (req, res) => {
-  console.log("req received is ", req.body.oldpic);
+  console.log("req received by updatecoverpic is ", req.body.oldpic);
   if (
-    req.body.oldpic !== "no-image-avatar-vector-icon-600w-2054244497_xdhqa3"
+    req.body.oldpic !== "null"
   ) {
     cloudinary.uploader
       .destroy(req.body.oldpic)
-      .then((result) => console.log("deleted pic ", result));
+      .then((result) => console.log("deleted updatecoverpic ", result));
   }
   User.findByIdAndUpdate(
     req.user._id,

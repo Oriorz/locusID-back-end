@@ -63,8 +63,8 @@ const userSchema = new mongoose.Schema({
   role: String,
   organization: String,
   /*  links: [{ type: String }], */
-  followers: [{ type: ObjectId, ref: "User" }],
-  following: [{ type: ObjectId, ref: "User" }],
+  /* followers: [{ type: ObjectId, ref: "User" }],
+  following: [{ type: ObjectId, ref: "User" }], */
   socials: [
     {
       app: {

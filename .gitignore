@@ -8,3 +8,10 @@ userlist-backup.json
 wwebjs_auth/
 note.js
 testJs.js
+testjs.js
+pdf_lib_test.js
+pdf/
+pdfCombined.js
+pdfSerial.js
+backup/
+config/backup/*

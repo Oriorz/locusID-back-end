@@ -1,0 +1,3 @@
+{   
+    "ignore": ["./pdf/", "README", "./config/userlist.json", "*/config/"] 
+}
