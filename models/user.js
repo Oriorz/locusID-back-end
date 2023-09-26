@@ -104,6 +104,22 @@ const userSchema = new mongoose.Schema({
     tng: { type: String },
     bankacc: { type: String }, */
   ],
+  sales: [
+    {
+      app: {
+        type: String,
+        required: true,
+      },
+      name: {
+        type: String,
+        required: true,
+      },
+      link: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
   notes: {
     type: String,
     default: "this is something about me",

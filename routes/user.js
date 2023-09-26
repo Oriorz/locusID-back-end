@@ -145,7 +145,8 @@ router.put("/api/updatedetails/:detail", requireLogin, (req, res) => {
   );
 });
 
-router.put("/updatevcard", requireLogin, (req, res) => {
+/* router.put("/updatevcard", requireLogin, (req, res) => { */
+router.put(/^\/(?:api\/)?updatevcard$/, requireLogin, (req, res) => {
   const tkey = req.body.vcard;
   User.findByIdAndUpdate(
     req.user._id,
@@ -159,7 +160,9 @@ router.put("/updatevcard", requireLogin, (req, res) => {
     }
   );
 });
-router.put("/updatemapaddress", requireLogin, (req, res) => {
+
+/* router.put("/updatemapaddress", requireLogin, (req, res) => { */
+router.put(/^\/(?:api\/)?updatemapaddress$/, requireLogin, (req, res) => {
   /* const tkey = req.params.detail; */
   const { address, maplink } = req.body;
   console.log("address : ", address, ", maplink : ", maplink);
@@ -176,24 +179,8 @@ router.put("/updatemapaddress", requireLogin, (req, res) => {
   );
 });
 
-router.put("/api/updatemapaddress", requireLogin, (req, res) => {
-  /* const tkey = req.params.detail; */
-  const { address, maplink } = req.body;
-  console.log("address : ", address, ", maplink : ", maplink);
-  User.findByIdAndUpdate(
-    req.user._id,
-    { $set: { address: address, maplink: maplink } },
-    { new: true, select: "-password" },
-    (err, result) => {
-      if (err) {
-        return res.status(422).json({ error: "details cannot update" });
-      }
-      res.json(result);
-    }
-  );
-});
-
-router.post("/createlink", requireLogin, async (req, res) => {
+/* router.post("/createlink", requireLogin, async (req, res) => { */
+router.post(/^\/(?:api\/)?createlink$/, requireLogin, async (req, res) => {
   const link = req.body.link;
   const linkLimit = 10;
   const user = await User.findOne({ _id: req.user._id });
@@ -217,31 +204,8 @@ router.post("/createlink", requireLogin, async (req, res) => {
   }
 });
 
-router.post("/api/createlink", requireLogin, async (req, res) => {
-  const link = req.body.link;
-  const linkLimit = 10;
-  const user = await User.findOne({ _id: req.user._id });
-  if (user.links.length < linkLimit) {
-    User.findByIdAndUpdate(
-      req.user._id,
-      { $push: { links: link } },
-      { new: true, select: "-password" },
-      (err, result) => {
-        if (err) {
-          return res.status(422).json({ error: "link cannot insert" });
-        }
-        result.password = undefined;
-        return res.json(result);
-      }
-    );
-  } else {
-    return res.status(422).json({
-      message: `links amount create is more than ${linkLimit}, please reduce`,
-    });
-  }
-});
-
-router.put("/deletelink", requireLogin, (req, res) => {
+/* router.put("/deletelink", requireLogin, (req, res) => { */
+router.put(/^\/(?:api\/)?deletelink$/, requireLogin, (req, res) => {
   const link = req.body.link;
   User.findByIdAndUpdate(
     req.user._id,
@@ -257,23 +221,8 @@ router.put("/deletelink", requireLogin, (req, res) => {
   );
 });
 
-router.put("/api/deletelink", requireLogin, (req, res) => {
-  const link = req.body.link;
-  User.findByIdAndUpdate(
-    req.user._id,
-    { $pull: { links: link } },
-    { new: true, select: "-password" },
-    (err, result) => {
-      if (err) {
-        return res.status(422).json({ error: "link cannot delete" });
-      }
-      result.password = undefined;
-      return res.json(result);
-    }
-  );
-});
-
-router.put("/editlink", requireLogin, (req, res) => {
+/* router.put("/editlink", requireLogin, (req, res) => { */
+router.put(/^\/(?:api\/)?editlink$/, requireLogin, (req, res) => {
   const link = req.body.link;
   User.updateOne(
     { _id: req.user._id, "links._id": link._id },
@@ -289,7 +238,8 @@ router.put("/editlink", requireLogin, (req, res) => {
   );
 });
 
-router.post("/createsocials", requireLogin, async (req, res) => {
+/* router.post("/createsocials", requireLogin, async (req, res) => { */
+router.post(/^\/(?:api\/)?createsocials$/, requireLogin, async (req, res) => {
   const social = req.body.socials;
   User.findByIdAndUpdate(
     req.user._id,
@@ -305,7 +255,8 @@ router.post("/createsocials", requireLogin, async (req, res) => {
   );
 });
 
-router.put("/deletesocials", requireLogin, (req, res) => {
+/* router.put("/deletesocials", requireLogin, (req, res) => { */
+router.put(/^\/(?:api\/)?deletesocials$/, requireLogin, (req, res) => {
   const social = req.body.socials;
   User.findByIdAndUpdate(
     req.user._id,
@@ -321,7 +272,8 @@ router.put("/deletesocials", requireLogin, (req, res) => {
   );
 });
 
-router.put("/editsocials", requireLogin, (req, res) => {
+/* router.put("/editsocials", requireLogin, (req, res) => { */
+router.put(/^\/(?:api\/)?editsocials$/, requireLogin, (req, res) => {
   /* const link = req.body.link; */
   const social = req.body.socials;
   User.updateOne(
@@ -340,7 +292,8 @@ router.put("/editsocials", requireLogin, (req, res) => {
   );
 });
 
-router.put("/editbios", requireLogin, (req, res) => {
+/* router.put("/editbios", requireLogin, (req, res) => { */
+router.put(/^\/(?:api\/)?editbios$/, requireLogin, (req, res) => {
   /* const link = req.body.link; */
   const social = req.body.socials;
   User.updateOne(
@@ -359,7 +312,8 @@ router.put("/editbios", requireLogin, (req, res) => {
   );
 });
 
-router.get("/metadata", async (req, res) => {
+/* router.get("/metadata", async (req, res) => { */
+router.get(/^\/(?:api\/)?metadata$/, async (req, res) => {
   try {
     const { url } = req.query;
     const response = await axios.get(url);
@@ -378,7 +332,8 @@ router.get("/metadata", async (req, res) => {
   }
 });
 
-router.get("/get-map", async (req, res) => {
+/* router.get("/get-map", async (req, res) => { */
+router.get(/^\/(?:api\/)?get-map$/, async (req, res) => {
   try {
     const address =
       "39,jalan+jaya+11+rini+heights+taman+mutiara+rini+81300+skudai+johor+malaysia";
@@ -391,7 +346,8 @@ router.get("/get-map", async (req, res) => {
   }
 });
 
-router.get("/geocode", async (req, res) => {
+/* router.get("/geocode", async (req, res) => { */
+router.get(/^\/(?:api\/)?geocode$/, async (req, res) => {
   try {
     const address = req.query.address;
     /* const apiKey = process.env.GOOGLE_MAPS_API_KEY; */
