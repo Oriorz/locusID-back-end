@@ -292,6 +292,57 @@ router.put(/^\/(?:api\/)?editsocials$/, requireLogin, (req, res) => {
   );
 });
 
+router.post(/^\/(?:api\/)?createsales$/, requireLogin, async (req, res) => {
+  const sale = req.body.sales;
+  User.findByIdAndUpdate(
+    req.user._id,
+    { $push: { sales: sale } },
+    { new: true, select: "-password" },
+    (err, result) => {
+      if (err) {
+        return res.status(422).json({ error: "sales cannot insert" });
+      }
+      result.password = undefined;
+      return res.json(result);
+    }
+  );
+});
+
+router.put(/^\/(?:api\/)?deletesales$/, requireLogin, (req, res) => {
+  const sale = req.body.sales;
+  User.findByIdAndUpdate(
+    req.user._id,
+    { $pull: { sales: sale } },
+    { new: true, select: "-password" },
+    (err, result) => {
+      if (err) {
+        return res.status(422).json({ error: "sales cannot delete" });
+      }
+      result.password = undefined;
+      return res.json(result);
+    }
+  );
+});
+
+router.put(/^\/(?:api\/)?editsales$/, requireLogin, (req, res) => {
+  /* const link = req.body.link; */
+  const sale = req.body.sales;
+  User.updateOne(
+    /* { _id: req.user._id, "links._id": link._id }, */
+    { _id: req.user._id, "sales._id": sale._id },
+    /* { $set: { "links.$": link } }, */
+    { $set: { "sales.$": sale } },
+    { new: true, select: "-password" },
+    (err, result) => {
+      if (err) {
+        return res.status(422).json({ error: "sales cannot edit" });
+      }
+      result.password = undefined;
+      return res.json(result);
+    }
+  );
+});
+
 /* router.put("/editbios", requireLogin, (req, res) => { */
 router.put(/^\/(?:api\/)?editbios$/, requireLogin, (req, res) => {
   /* const link = req.body.link; */
