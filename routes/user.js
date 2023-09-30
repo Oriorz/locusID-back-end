@@ -21,7 +21,7 @@ cloudinary.config({
 
 router.get(/^\/(?:api\/)?healthcheck$/, (req, res) => {
   try {
-    console.log("healthcheck called ")
+    console.log("healthcheck called ");
     res.json({ data: "status ok" });
   } catch (err) {
     return res.status(404).json({ error: "Page not found" });
@@ -95,9 +95,7 @@ router.put(/^\/(?:api\/)?updatepic$/, requireLogin, (req, res) => {
 // if it is not default pic, then after do upload new picture, delete old picture
 router.put(/^\/(?:api\/)?updatecoverpic$/, requireLogin, (req, res) => {
   console.log("req received by updatecoverpic is ", req.body.oldpic);
-  if (
-    req.body.oldpic !== "null"
-  ) {
+  if (req.body.oldpic !== "null") {
     cloudinary.uploader
       .destroy(req.body.oldpic)
       .then((result) => console.log("deleted updatecoverpic ", result));
@@ -336,6 +334,73 @@ router.put(/^\/(?:api\/)?editsales$/, requireLogin, (req, res) => {
     (err, result) => {
       if (err) {
         return res.status(422).json({ error: "sales cannot edit" });
+      }
+      result.password = undefined;
+      return res.json(result);
+    }
+  );
+});
+
+router.post(/^\/(?:api\/)?creategames$/, requireLogin, async (req, res) => {
+  const game = req.body.games;
+  User.findByIdAndUpdate(
+    req.user._id,
+    { $push: { games: game } },
+    { new: true, select: "-password" },
+    (err, result) => {
+      if (err) {
+        return res.status(422).json({ error: "games cannot insert" });
+      }
+      result.password = undefined;
+      return res.json(result);
+    }
+  );
+});
+
+router.post(/^\/(?:api\/)?creategames$/, requireLogin, async (req, res) => {
+  const game = req.body.games;
+  User.findByIdAndUpdate(
+    req.user._id,
+    { $push: { games: game } },
+    { new: true, select: "-password" },
+    (err, result) => {
+      if (err) {
+        return res.status(422).json({ error: "games cannot insert" });
+      }
+      result.password = undefined;
+      return res.json(result);
+    }
+  );
+});
+
+router.put(/^\/(?:api\/)?deletegames$/, requireLogin, (req, res) => {
+  const game = req.body.games;
+  User.findByIdAndUpdate(
+    req.user._id,
+    { $pull: { games: game } },
+    { new: true, select: "-password" },
+    (err, result) => {
+      if (err) {
+        return res.status(422).json({ error: "games cannot delete" });
+      }
+      result.password = undefined;
+      return res.json(result);
+    }
+  );
+});
+
+router.put(/^\/(?:api\/)?editgames$/, requireLogin, (req, res) => {
+  /* const link = req.body.link; */
+  const game = req.body.games;
+  User.updateOne(
+    /* { _id: req.user._id, "links._id": link._id }, */
+    { _id: req.user._id, "games._id": game._id },
+    /* { $set: { "links.$": link } }, */
+    { $set: { "games.$": game } },
+    { new: true, select: "-password" },
+    (err, result) => {
+      if (err) {
+        return res.status(422).json({ error: "games cannot edit" });
       }
       result.password = undefined;
       return res.json(result);

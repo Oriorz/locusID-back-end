@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
   resetToken: String,
   expireToken: Date,
   cooldownToken: Date,
-  firstime:Boolean,
+  firstime: Boolean,
   pic: {
     type: String,
     //default: "https://res.cloudinary.com/xiaomiao/image/upload/v1667155720/no-image-avatar-vector-icon-600w-2054244497_xdhqa3.jpg"
@@ -105,6 +105,38 @@ const userSchema = new mongoose.Schema({
     bankacc: { type: String }, */
   ],
   sales: [
+    {
+      app: {
+        type: String,
+        required: true,
+      },
+      name: {
+        type: String,
+        required: true,
+      },
+      link: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
+  games: [
+    {
+      app: {
+        type: String,
+        required: true,
+      },
+      name: {
+        type: String,
+        required: true,
+      },
+      link: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
+  payments: [
     {
       app: {
         type: String,
