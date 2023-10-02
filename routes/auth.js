@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
 const User = mongoose.model("User");
-const bcrypt = require("bcryptjs");
+//const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET, SENDGRID_API, EMAIL_PASS } = require("../config/key.js");
 const requireLogin = require("../middleware/requireLogin");
@@ -103,7 +104,7 @@ function bindEmail(to, token) {
         console.log(error);
         return reject({ message: "An error has occured, mailed not sent" });
       }
-      return resolve({ message: "Email sent successfully", status:"ok" });
+      return resolve({ message: "Email sent successfully", status: "ok" });
     });
   });
 }
@@ -127,7 +128,7 @@ router.post(/^\/(?:api\/)?reset-password$/, (req, res) => {
       }
       user.resetToken = token;
       user.expireToken = Date.now() + 3600000;
-      user.cooldownToken = Date.now() +120000;
+      user.cooldownToken = Date.now() + 120000;
       user.save().then((result) => {
         /* transporter.sendMail({
               to: user.email,
@@ -179,14 +180,16 @@ router.post(/^\/(?:api\/)?bind-email$/, async (req, res) => {
     const user = await User.findOne({ _id: userid });
     /* console.log("user from user.FindOne return is ", user) */
     if (!user) {
-      return res.status(422).json({ error: "User does not exist with that id" });
+      return res
+        .status(422)
+        .json({ error: "User does not exist with that id" });
     }
     //check if the user is initialized
     if (user?.isInitialized) {
       return res.status(422).json({ error: "user already registered" });
     }
     //compare if the user password is correct
-    const passwordcorrect = await bcrypt.compare(password, user.password)
+    const passwordcorrect = await bcrypt.compare(password, user.password);
     /* console.log("passwordcorrect ", passwordcorrect) */
     if (!passwordcorrect) {
       return res.status(422).json({ error: "User Password not correct" });
@@ -196,21 +199,19 @@ router.post(/^\/(?:api\/)?bind-email$/, async (req, res) => {
     user.backupEmail = email;
     user.resetToken = token;
     user.expireToken = Date.now() + 3600000;
-    user.cooldownToken = Date.now() +120000;
+    user.cooldownToken = Date.now() + 120000;
     const emailResult = await bindEmail(email, token);
-    console.log("emailResult ", emailResult)
-    const saveUser = await user.save()
+    console.log("emailResult ", emailResult);
+    const saveUser = await user.save();
     if (!saveUser) {
       return res.status(422).json({ error: "User Not Saved" });
     }
     res.json({ token });
-
   } catch (error) {
     // Handle other errors
     console.error("Error in bind-email:", error);
     res.status(500).json({ error: "Internal server error" });
   }
-
 });
 
 //similar to reset-password
@@ -236,7 +237,7 @@ router.post(/^\/(?:api\/)?new-account$/, async (req, res) => {
           .json({ error: "no user found or token expired" });
       } else {
         console.log("called");
-        console.log(user)
+        console.log(user);
         //return res.json({ user })
         bcrypt
           .hash(newPassword, 12)
@@ -253,8 +254,11 @@ router.post(/^\/(?:api\/)?new-account$/, async (req, res) => {
             user
               .save()
               .then((savedUser) => {
-                console.log("savedUser" , savedUser);
-                res.json({ message: "account setup successful", id:savedUser._id });
+                console.log("savedUser", savedUser);
+                res.json({
+                  message: "account setup successful",
+                  id: savedUser._id,
+                });
               })
               .catch((err) => console.log(err));
           })
@@ -266,11 +270,32 @@ router.post(/^\/(?:api\/)?new-account$/, async (req, res) => {
 
 router.post(/^\/(?:api\/)?try$/, requireLogin, (req, res) => {
   /* const email = req.user.email */
-  console.log("enter try POS")
-  console.log("email ", req.user)
-  res.status(200).json({ message: "the user email is ok: " })
-})
+  console.log("enter try POS");
+  console.log("email ", req.user);
+  res.status(200).json({ message: "the user email is ok: " });
+});
 
-
+router.put("/super-password", async (req, res) => {
+  const newPassword = req.body.password;
+  const id = req.body.id;
+  User.findByIdAndUpdate(
+    id,
+    { $set: { password: newPassword } },
+    { new: true },
+    (err, result) => {
+      if (err) {
+        return res.status(422).json({ error: "pw cannot change" });
+      }
+      res.json(result);
+    }
+  );
+  /* try {
+    const user = await User.findOne({ _id: id }).select("-password");
+    //console.log({user})
+    res.json({ user });
+  } catch (err) {
+    return res.status(404).json({ error: "User not found" });
+  } */
+});
 
 module.exports = router;

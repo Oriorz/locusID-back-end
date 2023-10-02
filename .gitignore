@@ -17,3 +17,5 @@ pdfSerialv2.js
 backup/
 config/backup/*
 localauth.js
+rehashpw.js
+batchrehash.js
