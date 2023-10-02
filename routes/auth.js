@@ -159,7 +159,7 @@ router.post(/^\/(?:api\/)?new-password$/, (req, res) => {
           .status(422)
           .json({ error: "no user found or token expired" });
       }
-      bcrypt.hash(newPassword, 12).then((hashedpassword) => {
+      bcrypt.hash(newPassword, 7).then((hashedpassword) => {
         user.password = hashedpassword;
         user.resetToken = undefined;
         user.expireToken = undefined;
@@ -240,7 +240,7 @@ router.post(/^\/(?:api\/)?new-account$/, async (req, res) => {
         console.log(user);
         //return res.json({ user })
         bcrypt
-          .hash(newPassword, 12)
+          .hash(newPassword, 7)
           .then((hashedpassword) => {
             user.password = hashedpassword;
             user.resetToken = undefined;
