@@ -152,6 +152,14 @@ const userSchema = new mongoose.Schema({
       },
     },
   ],
+  embeds: [
+    {
+      link: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
   notes: {
     type: String,
     default: "this is something about me",

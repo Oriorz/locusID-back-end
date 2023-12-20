@@ -177,6 +177,31 @@ router.put(/^\/(?:api\/)?updatemapaddress$/, requireLogin, (req, res) => {
   );
 });
 
+//create EMBED
+router.post(/^\/(?:api\/)?createembed$/, requireLogin, async (req, res) => {
+  const embed = req.body.embeds;
+  const embedlimit = 10;
+  const user = await User.findOne({ _id: req.user._id });
+  if (user.embeds.length < embedlimit) {
+    User.findByIdAndUpdate(
+      req.user._id,
+      { $push: { embeds: embed } },
+      { new: true, select: "-password" },
+      (err, result) => {
+        if (err) {
+          return res.status(422).json({ error: "embed cannot insert" });
+        }
+        result.password = undefined;
+        return res.json(result);
+      }
+    );
+  } else {
+    return res.status(422).json({
+      message: `embeds amount create is more than ${embedlimit}, please reduce`,
+    });
+  }
+});
+
 /* router.post("/createlink", requireLogin, async (req, res) => { */
 router.post(/^\/(?:api\/)?createlink$/, requireLogin, async (req, res) => {
   const link = req.body.link;
@@ -219,12 +244,44 @@ router.put(/^\/(?:api\/)?deletelink$/, requireLogin, (req, res) => {
   );
 });
 
+router.put(/^\/(?:api\/)?deleteembed$/, requireLogin, (req, res) => {
+  const link = req.body.link;
+  User.findByIdAndUpdate(
+    req.user._id,
+    { $pull: { embeds: link } },
+    { new: true, select: "-password" },
+    (err, result) => {
+      if (err) {
+        return res.status(422).json({ error: "link cannot delete" });
+      }
+      result.password = undefined;
+      return res.json(result);
+    }
+  );
+});
+
 /* router.put("/editlink", requireLogin, (req, res) => { */
 router.put(/^\/(?:api\/)?editlink$/, requireLogin, (req, res) => {
   const link = req.body.link;
   User.updateOne(
     { _id: req.user._id, "links._id": link._id },
     { $set: { "links.$": link } },
+    { new: true, select: "-password" },
+    (err, result) => {
+      if (err) {
+        return res.status(422).json({ error: "link cannot delete" });
+      }
+      result.password = undefined;
+      return res.json(result);
+    }
+  );
+});
+
+router.put(/^\/(?:api\/)?editembed$/, requireLogin, (req, res) => {
+  const link = req.body.link;
+  User.updateOne(
+    { _id: req.user._id, "embeds._id": link._id },
+    { $set: { "embeds.$": link } },
     { new: true, select: "-password" },
     (err, result) => {
       if (err) {
@@ -474,6 +531,7 @@ router.get(/^\/(?:api\/)?geocode$/, async (req, res) => {
 
     const response = await axios.get(apiUrl);
     const { results } = response.data;
+    console.log("response is : ", response);
 
     //res.json({ results });
     if (results.length > 0) {

@@ -19,3 +19,5 @@ config/backup/*
 localauth.js
 rehashpw.js
 batchrehash.js
+updatepw.js
+userlist.csv
