@@ -216,51 +216,51 @@ router.put(/^\/(?:api\/)?updatemapaddress$/, requireLogin, (req, res) => {
 //create EMBED
 router.post(/^\/(?:api\/)?createembed$/, requireLogin, async (req, res) => {
   const embed = req.body.embeds;
-  const embedlimit = 10;
-  const user = await User.findOne({ _id: req.user._id });
-  if (user.embeds.length < embedlimit) {
-    User.findByIdAndUpdate(
-      req.user._id,
-      { $push: { embeds: embed } },
-      { new: true, select: "-password" },
-      (err, result) => {
-        if (err) {
-          return res.status(422).json({ error: "embed cannot insert" });
-        }
-        result.password = undefined;
-        return res.json(result);
+  /* const embedlimit = 10;
+  const user = await User.findOne({ _id: req.user._id }); */
+  /*  if (user.embeds.length < embedlimit) { */
+  User.findByIdAndUpdate(
+    req.user._id,
+    { $push: { embeds: embed } },
+    { new: true, select: "-password" },
+    (err, result) => {
+      if (err) {
+        return res.status(422).json({ error: "embed cannot insert" });
       }
-    );
-  } else {
+      result.password = undefined;
+      return res.json(result);
+    }
+  );
+  /*  } else {
     return res.status(422).json({
       message: `embeds amount create is more than ${embedlimit}, please reduce`,
     });
-  }
+  } */
 });
 
 /* router.post("/createlink", requireLogin, async (req, res) => { */
 router.post(/^\/(?:api\/)?createlink$/, requireLogin, async (req, res) => {
   const link = req.body.link;
-  const linkLimit = 10;
-  const user = await User.findOne({ _id: req.user._id });
-  if (user.links.length < linkLimit) {
-    User.findByIdAndUpdate(
-      req.user._id,
-      { $push: { links: link } },
-      { new: true, select: "-password" },
-      (err, result) => {
-        if (err) {
-          return res.status(422).json({ error: "link cannot insert" });
-        }
-        result.password = undefined;
-        return res.json(result);
+  /* const linkLimit = 10;
+  const user = await User.findOne({ _id: req.user._id }); */
+  /* if (user.links.length < linkLimit) { */
+  User.findByIdAndUpdate(
+    req.user._id,
+    { $push: { links: link } },
+    { new: true, select: "-password" },
+    (err, result) => {
+      if (err) {
+        return res.status(422).json({ error: "link cannot insert" });
       }
-    );
-  } else {
+      result.password = undefined;
+      return res.json(result);
+    }
+  );
+  /* } else {
     return res.status(422).json({
       message: `links amount create is more than ${linkLimit}, please reduce`,
     });
-  }
+  } */
 });
 
 /* router.put("/deletelink", requireLogin, (req, res) => { */
