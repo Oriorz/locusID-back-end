@@ -119,6 +119,7 @@ router.post(/^\/(?:api\/)?reset-password$/, (req, res) => {
     if (err) {
       console.log(err);
     }
+    console.log("enter crypto ,", req.body.email);
     const token = buf.toString("hex");
     User.findOne({ email: req.body.email }).then((user) => {
       if (!user) {
@@ -139,11 +140,16 @@ router.post(/^\/(?:api\/)?reset-password$/, (req, res) => {
           <h5>click on this <a href="http://localhost:3000/reset/${token}">link</a> to reset password</h5>
           `
             }) */
+        console.log("enter user.save", result);
+
         resetEmail(user.email, token)
-          .then((res) => {
+          .then((res1) => {
             res.json({ message: "check your email" });
           })
-          .catch((error) => res.status(500).send(error.message));
+          .catch((error) => {
+            console.log("error reset email ", error);
+            res.status(500).send(error.message);
+          });
       });
     });
   });

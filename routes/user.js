@@ -113,8 +113,43 @@ router.put(/^\/(?:api\/)?updatecoverpic$/, requireLogin, (req, res) => {
   );
 });
 
+// update Heroes Section picture API, it detects if the old pic is default pic,
+router.put(/^\/(?:api\/)?updateheropic$/, requireLogin, (req, res) => {
+  const link = req.body.link;
+  console.log("req received by updatecoverpic is ", req.body.oldpic);
+  if (req.body.oldpic !== "null") {
+    cloudinary.uploader
+      .destroy(req.body.oldpic)
+      .then((result) => console.log("deleted hero section pic ", result));
+  }
+  /* User.findByIdAndUpdate(
+    req.user._id,
+    { $set: { coverPic: req.body.pic } },
+    { new: true, select: "-password" },
+    (err, result) => {
+      if (err) {
+        return res.status(422).json({ error: "pic cannot post" });
+      }
+      res.json(result);
+    }
+  ); */
+  User.updateOne(
+    { _id: req.user._id, "heroes._id": link._id },
+    { $set: { "heroes.$": link } },
+    { new: true, select: "-password" },
+    (err, result) => {
+      if (err) {
+        return res.status(422).json({ error: "link cannot delete" });
+      }
+      result.password = undefined;
+      return res.json(result);
+    }
+  );
+});
+
 router.put("/updatedetails/:detail", requireLogin, (req, res) => {
   const tkey = req.params.detail;
+  console.log("updatedetails called ", tkey, " ", req.body.value);
   User.findByIdAndUpdate(
     req.user._id,
     { $set: { [`${tkey}`]: req.body.value } },
@@ -130,6 +165,7 @@ router.put("/updatedetails/:detail", requireLogin, (req, res) => {
 });
 router.put("/api/updatedetails/:detail", requireLogin, (req, res) => {
   const tkey = req.params.detail;
+  console.log("api/updatedetails called ", tkey, " ", req.body.value);
   User.findByIdAndUpdate(
     req.user._id,
     { $set: { [`${tkey}`]: req.body.value } },

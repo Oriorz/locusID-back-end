@@ -82,27 +82,6 @@ const userSchema = new mongoose.Schema({
         required: true,
       },
     },
-    /* facebook: { type: String },
-    whatsapp: { type: String },
-    telegram: { type: String },
-    linkedin: { type: String },
-    line: { type: String },
-    skype: { type: String },
-    twitter: { type: String },
-    wechat: { type: String },
-    instagram: { type: String },
-    reddit: { type: String },
-    grab: { type: String },
-    foodpanda: { type: String },
-    lazada: { type: String },
-    shopee: { type: String },
-    taobao: { type: String },
-    carousell: { type: String },
-    pokemon: { type: String },
-    nintendo: { type: String },
-    steam: { type: String },
-    tng: { type: String },
-    bankacc: { type: String }, */
   ],
   sales: [
     {
@@ -158,6 +137,16 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
       },
+    },
+  ],
+  heroes: [
+    {
+      title: { type: String },
+      pic: {
+        type: String,
+        required: true,
+      },
+      notes: { type: String },
     },
   ],
   notes: {
